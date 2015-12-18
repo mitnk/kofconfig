@@ -159,7 +159,7 @@ def config(keys_p1=None, keys_p2=None):
     tree.write(DST)
 
 
-if __name__ == '__main__':
+def main():
     desc = "\nkofconfig ABCD[XYZV] ABCD[XYZV]\n\n" \
         "A: 轻拳  B: 轻脚  C: 重拳  D: 重脚\n" \
         "X: A+B  Y: C+D  Z: A+B+C V: A+B+C+D\n\n" \
@@ -182,3 +182,7 @@ if __name__ == '__main__':
         p1 = args.p1
         p2 = args.p2
     config(keys_p1=p1, keys_p2=p2)
+
+
+if __name__ == '__main__':
+    main()

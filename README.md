@@ -4,6 +4,15 @@ KOF Keyboard Config Tool for MAME OS X
 Tested on [MAME OS X Version 0.135](http://mameosx.sourceforge.net/).
 Mac OS X 10.11.2
 
+Install
+-------
+
+```
+pip install kofconfig
+```
+
+use `sudo` if needed.
+
 Usage
 -----
 
