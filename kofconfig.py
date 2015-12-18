@@ -46,8 +46,12 @@ KEYS_LIST = (
     BUTTON4,
 )
 
+BASE_XML = """<?xml version="1.0"?>
+<mameconfig version="10">
+    <system name="default"><input></input></system>
+</mameconfig>"""
 
-SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'default.xml')
+
 DST = os.path.expanduser('~/Library/Application Support/MAME OS X/Config/default.cfg')
 
 
@@ -148,9 +152,10 @@ def set_none_keys(root):
 def config(keys_p1=None, keys_p2=None):
     if os.path.exists(DST):
         tree = ET.parse(DST)
+        root = tree.getroot()
     else:
-        tree = ET.parse(SRC)
-    root = tree.getroot()
+        root = ET.fromstring(BASE_XML)
+        tree = ET.ElementTree(root)
     elem_input = nest_find(root, 'input')
     mulit_kbd = is_using_multiple_keyboard()
     config_player(elem_input, 1, keys_p1, mulit_kbd=mulit_kbd)
