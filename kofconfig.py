@@ -5,25 +5,64 @@ KOF Keyboard Config Tool for Mame OS X.
 by mitnk (w@mitnk.com)
 Dec 2015
 """
-import itertools
-import sys
 import argparse
+import itertools
+import os.path
+import subprocess
+import sys
 import xml.etree.ElementTree as ET
 
 
-UP = ('JOYSTICK_UP', 'W')
-DOWN = ('JOYSTICK_DOWN', 'S')
-LEFT = ('JOYSTICK_LEFT', 'A')
-RIGHT = ('JOYSTICK_RIGHT', 'D')
+KEYS_TO_NONE = (
+    "JOYSTICKRIGHT_UP",
+    "JOYSTICKRIGHT_DOWN",
+    "JOYSTICKRIGHT_LEFT",
+    "JOYSTICKRIGHT_RIGHT",
+    "JOYSTICKLEFT_UP",
+    "JOYSTICKLEFT_DOWN",
+    "JOYSTICKLEFT_LEFT",
+    "JOYSTICKLEFT_RIGHT",
+    "UI_CANCEL",  # Preventing ESC to quit game
+)
+
+KEYS_UP = ('JOYSTICK_UP', 'W', 'UP')
+KEYS_DOWN = ('JOYSTICK_DOWN', 'S', 'DOWN')
+KEYS_LEFT = ('JOYSTICK_LEFT', 'A', 'LEFT')
+KEYS_RIGHT = ('JOYSTICK_RIGHT', 'D', 'RIGHT')
 
 BUTTON1 = 'BUTTON1'
 BUTTON2 = 'BUTTON2'
 BUTTON3 = 'BUTTON3'
 BUTTON4 = 'BUTTON4'
 
+KEYS_LIST = (
+    KEYS_UP[0],
+    KEYS_DOWN[0],
+    KEYS_LEFT[0],
+    KEYS_RIGHT[0],
+    BUTTON1,
+    BUTTON2,
+    BUTTON3,
+    BUTTON4,
+)
+
+
+SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'default.xml')
+DST = os.path.expanduser('~/Library/Application Support/MAME OS X/Config/default.cfg')
+
+
+def is_using_multiple_keyboard():
+    usb_info = subprocess.Popen(
+        ['system_profiler', 'SPUSBDataType'], stdout=subprocess.PIPE)
+    output = subprocess.check_output(
+        ['grep', '-i', 'keyboard'], stdin=usb_info.stdout)
+    usb_info.wait()
+    output = output.decode('utf-8')
+    return output.lower().count('keyboard') > 1
+
 
 def is_unwanted_key(key):
-    for k in (UP, DOWN, LEFT, RIGHT, BUTTON1, BUTTON2, BUTTON3, BUTTON4):
+    for k in KEYS_LIST:
         if key.upper().endswith(k):
             return False
     return True
@@ -36,7 +75,7 @@ def nest_find(root, key):
         return nest_find(item, key)
 
 
-def config_player(tag, player_id, keys):
+def config_player(tag, player_id, keys, mulit_kbd=False):
     if not keys:
         return
     key_list = []
@@ -44,20 +83,28 @@ def config_player(tag, player_id, keys):
         if c.upper() not in key_list:
             key_list.append(c.upper())
     if len(key_list) < 4 or len(key_list) > 8:
-        print("Wrong Usage. use -h for help")
+        print("Too few keys. See -h for details.")
         exit(1)
+
     for item in tag.findall('port'):
         key_code = item.attrib['type']
         if is_unwanted_key(key_code):
             tag.remove(item)
+            continue
         if key_code.startswith('P{}_'.format(player_id)):
             tag.remove(item)
+            continue
 
-    for DIRECT, KEY in (UP, DOWN, LEFT, RIGHT):
+    kbd_id = player_id if mulit_kbd else 1
+    for DIRECT, KEY_1, KEY_2 in (KEYS_UP, KEYS_DOWN, KEYS_LEFT, KEYS_RIGHT):
         key_code = 'P{}_{}'.format(player_id, DIRECT)
         element = ET.Element('port', attrib={'type': key_code})
         newseq = ET.Element('newseq', attrib={'type': 'standard'})
-        text = 'KEYCODE_{}_{}'.format(player_id, KEY)
+        if player_id == 2 and not mulit_kbd:
+            KEY = KEY_2
+        else:
+            KEY = KEY_1
+        text = 'KEYCODE_{}_{}'.format(kbd_id, KEY)
         newseq.text = text
         element.append(newseq)
         tag.append(element)
@@ -66,31 +113,50 @@ def config_player(tag, player_id, keys):
         key_code = 'P{}_BUTTON{}'.format(player_id, NUM)
         element = ET.Element('port', attrib={'type': key_code})
         newseq = ET.Element('newseq', attrib={'type': 'standard'})
-        text = 'KEYCODE_{}_{}'.format(player_id, KEY)
+        text = 'KEYCODE_{}_{}'.format(kbd_id, KEY)
         if NUM in (1, 2) and len(key_list) >= 5:
             X = key_list[4]
-            text += ' OR KEYCODE_{}_{}'.format(player_id, X)
+            text += ' OR KEYCODE_{}_{}'.format(kbd_id, X)
         if NUM in (3, 4) and len(key_list) >= 6:
             Y = key_list[5]
-            text += ' OR KEYCODE_{}_{}'.format(player_id, Y)
+            text += ' OR KEYCODE_{}_{}'.format(kbd_id, Y)
         if NUM in (1, 2, 3) and len(key_list) >= 7:
             Z = key_list[6]
-            text += ' OR KEYCODE_{}_{}'.format(player_id, Z)
+            text += ' OR KEYCODE_{}_{}'.format(kbd_id, Z)
         if NUM in (1, 2, 3, 4) and len(key_list) >= 8:
             V = key_list[7]
-            text += ' OR KEYCODE_{}_{}'.format(player_id, V)
+            text += ' OR KEYCODE_{}_{}'.format(kbd_id, V)
         newseq.text = text
         element.append(newseq)
         tag.append(element)
 
 
+def set_none_keys(root):
+    for key in KEYS_TO_NONE:
+        for player_id in (1, 2):
+            if key.startswith("UI_"):
+                key_code = key
+            else:
+                key_code = 'P{}_{}'.format(player_id, key)
+            element = ET.Element('port', attrib={'type': key_code})
+            newseq = ET.Element('newseq', attrib={'type': 'standard'})
+            newseq.text = 'NONE'
+            element.append(newseq)
+            root.append(element)
+
+
 def config(keys_p1=None, keys_p2=None):
-    tree = ET.parse('kof.cfg')
+    if os.path.exists(DST):
+        tree = ET.parse(DST)
+    else:
+        tree = ET.parse(SRC)
     root = tree.getroot()
     elem_input = nest_find(root, 'input')
-    config_player(elem_input, 1, keys_p1)
-    config_player(elem_input, 2, keys_p2)
-    tree.write('output.xml')
+    mulit_kbd = is_using_multiple_keyboard()
+    config_player(elem_input, 1, keys_p1, mulit_kbd=mulit_kbd)
+    config_player(elem_input, 2, keys_p2, mulit_kbd=mulit_kbd)
+    set_none_keys(elem_input)
+    tree.write(DST)
 
 
 if __name__ == '__main__':
