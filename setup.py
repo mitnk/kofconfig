@@ -51,7 +51,7 @@ You need to restart MAME after config.
 
 setup(
     name='kofconfig',
-    version='0.1.1',
+    version='0.1.2',
 
     description='KOF Keyboard Config Tool for MAME OS X',
     long_description=DESC,

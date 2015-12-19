@@ -4,6 +4,7 @@ KOF Keyboard Config Tool for Mame OS X.
 
 by mitnk (w@mitnk.com)
 Dec 2015
+https://github.com/mitnk/kofconfig
 """
 import argparse
 import itertools
@@ -56,6 +57,12 @@ DST = os.path.expanduser('~/Library/Application Support/MAME OS X/Config/default
 
 
 def is_using_multiple_keyboard():
+    try:
+        subprocess.check_output(['which', 'system_profiler'])
+    except subprocess.CalledProcessError as e:
+        print("Only OS X supported, but you can fork this project.")
+        exit(e.returncode)
+
     usb_info = subprocess.Popen(
         ['system_profiler', 'SPUSBDataType'], stdout=subprocess.PIPE)
     output = subprocess.check_output(
