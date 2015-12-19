@@ -7,13 +7,15 @@ Home Page: https://github.com/mitnk/kofconfig
 Tested on MAME OS X Version 0.135. Mac OS X 10.11.2
 
 Install
+-------
+
 ::
 
     $ pip install kofconfig
 
 
 Usages
------------------
+------
 
 After installed, an executable ``kofconfig`` would available for use.
 If not, please replace following examples with ``python -m kofconfig``.
@@ -33,7 +35,8 @@ If not, please replace following examples with ``python -m kofconfig``.
     kofconfig -p1 ABCD[XYZV] -p2 ABCD[XYZV]
 
 
-Valid Examples:
+Valid Examples
+--------------
 
 ::
 
@@ -51,7 +54,7 @@ You need to restart MAME after config.
 
 setup(
     name='kofconfig',
-    version='0.1.2',
+    version='0.1.3',
 
     description='KOF Keyboard Config Tool for MAME OS X',
     long_description=DESC,

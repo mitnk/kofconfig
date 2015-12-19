@@ -169,6 +169,7 @@ def config(keys_p1=None, keys_p2=None):
     config_player(elem_input, 2, keys_p2, mulit_kbd=mulit_kbd)
     set_none_keys(elem_input)
     tree.write(DST)
+    print("Done Config! Please Restart Mame.")
 
 
 def main():
