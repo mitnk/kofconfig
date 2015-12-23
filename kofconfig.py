@@ -56,22 +56,6 @@ BASE_XML = """<?xml version="1.0"?>
 DST = os.path.expanduser('~/Library/Application Support/MAME OS X/Config/default.cfg')
 
 
-def is_using_multiple_keyboard():
-    try:
-        subprocess.check_output(['which', 'system_profiler'])
-    except subprocess.CalledProcessError as e:
-        print("Only OS X supported, but you can fork this project.")
-        exit(e.returncode)
-
-    usb_info = subprocess.Popen(
-        ['system_profiler', 'SPUSBDataType'], stdout=subprocess.PIPE)
-    output = subprocess.check_output(
-        ['grep', '-i', 'keyboard'], stdin=usb_info.stdout)
-    usb_info.wait()
-    output = output.decode('utf-8')
-    return output.lower().count('keyboard') > 1
-
-
 def is_unwanted_key(key):
     for k in KEYS_LIST:
         if key.upper().endswith(k):
@@ -86,7 +70,7 @@ def nest_find(root, key):
         return nest_find(item, key)
 
 
-def config_player(tag, player_id, keys, mulit_kbd=False):
+def config_player(tag, player_id, keys, single_play=False):
     if not keys:
         return
     key_list = []
@@ -106,12 +90,12 @@ def config_player(tag, player_id, keys, mulit_kbd=False):
             tag.remove(item)
             continue
 
-    kbd_id = player_id if mulit_kbd else 1
+    kbd_id = 1 if single_play else player_id
     for DIRECT, KEY_1, KEY_2 in (KEYS_UP, KEYS_DOWN, KEYS_LEFT, KEYS_RIGHT):
         key_code = 'P{}_{}'.format(player_id, DIRECT)
         element = ET.Element('port', attrib={'type': key_code})
         newseq = ET.Element('newseq', attrib={'type': 'standard'})
-        if player_id == 2 and not mulit_kbd:
+        if player_id == 2 and not single_play:
             KEY = KEY_2
         else:
             KEY = KEY_1
@@ -156,7 +140,7 @@ def set_none_keys(root):
             root.append(element)
 
 
-def config(keys_p1=None, keys_p2=None):
+def config(keys_p1=None, keys_p2=None, single_play=False):
     if os.path.exists(DST):
         tree = ET.parse(DST)
         root = tree.getroot()
@@ -164,9 +148,8 @@ def config(keys_p1=None, keys_p2=None):
         root = ET.fromstring(BASE_XML)
         tree = ET.ElementTree(root)
     elem_input = nest_find(root, 'input')
-    mulit_kbd = is_using_multiple_keyboard()
-    config_player(elem_input, 1, keys_p1, mulit_kbd=mulit_kbd)
-    config_player(elem_input, 2, keys_p2, mulit_kbd=mulit_kbd)
+    config_player(elem_input, 1, keys_p1, single_play=single_play)
+    config_player(elem_input, 2, keys_p2, single_play=single_play)
     set_none_keys(elem_input)
     tree.write(DST)
     print("Done Config! Please Restart Mame.")
@@ -181,6 +164,8 @@ def main():
         "kofconfig -p1 ABCD[XYZV]\n" \
         "kofconfig -p2 ABCD[XYZV]\n" \
         "kofconfig -p1 ABCD[XYZV] -p2 ABCD[XYZV]\n"
+
+    single_play = False
     if len(sys.argv) <= 2:
         print(desc)
         exit(0)
@@ -191,10 +176,12 @@ def main():
         parser = argparse.ArgumentParser(description=desc)
         parser.add_argument('-p1', '-P1', type=str)
         parser.add_argument('-p2', '-P2', type=str)
+        parser.add_argument('-S', '-s', '--single-play', action='store_true')
         args = parser.parse_args()
+        single_play = args.single_play
         p1 = args.p1
         p2 = args.p2
-    config(keys_p1=p1, keys_p2=p2)
+    config(keys_p1=p1, keys_p2=p2, single_play=single_play)
 
 
 if __name__ == '__main__':
