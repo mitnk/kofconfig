@@ -5,7 +5,7 @@ Tested on [MAME OS X Version 0.135](http://mameosx.sourceforge.net/).
 Mac OS X 10.11.2
 
 This tool is here for you to config KOF settings for multiple keyboards
-(Yes, MAME support this!!!). But it support simple config for single keyboard.
+(Yes, MAME support this!!!), though it supports simple config for single keyboard.
 
 All the directions KEYs are set to `WSAD` hard coded.
 
