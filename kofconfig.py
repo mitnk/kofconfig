@@ -9,7 +9,6 @@ https://github.com/mitnk/kofconfig
 import argparse
 import itertools
 import os.path
-import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
@@ -26,10 +25,10 @@ KEYS_TO_NONE = (
     "UI_CANCEL",  # Preventing ESC to quit game
 )
 
-KEYS_UP = ('JOYSTICK_UP', 'W', 'UP')
-KEYS_DOWN = ('JOYSTICK_DOWN', 'S', 'DOWN')
-KEYS_LEFT = ('JOYSTICK_LEFT', 'A', 'LEFT')
-KEYS_RIGHT = ('JOYSTICK_RIGHT', 'D', 'RIGHT')
+KEYS_UP = ('JOYSTICK_UP', 'W')
+KEYS_DOWN = ('JOYSTICK_DOWN', 'S')
+KEYS_LEFT = ('JOYSTICK_LEFT', 'A')
+KEYS_RIGHT = ('JOYSTICK_RIGHT', 'D')
 
 BUTTON1 = 'BUTTON1'
 BUTTON2 = 'BUTTON2'
@@ -90,14 +89,10 @@ def config_player(tag, player_id, keys, single_play=False):
             continue
 
     kbd_id = 1 if single_play else player_id
-    for DIRECT, KEY_1, KEY_2 in (KEYS_UP, KEYS_DOWN, KEYS_LEFT, KEYS_RIGHT):
+    for DIRECT, KEY in (KEYS_UP, KEYS_DOWN, KEYS_LEFT, KEYS_RIGHT):
         key_code = 'P{}_{}'.format(player_id, DIRECT)
         element = ET.Element('port', attrib={'type': key_code})
         newseq = ET.Element('newseq', attrib={'type': 'standard'})
-        if player_id == 2 and not single_play:
-            KEY = KEY_2
-        else:
-            KEY = KEY_1
         text = 'KEYCODE_{}_{}'.format(kbd_id, KEY)
         newseq.text = text
         element.append(newseq)
@@ -165,11 +160,10 @@ def main():
         "kofconfig -p1 ABCD[XYZV] -p2 ABCD[XYZV]\n"
 
     single_play = False
-
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 2 or sys.argv[1].lower() in ('-h', '--help'):
         print(desc)
         exit(0)
-    elif len(sys.argv) == 2 and (sys.argv[1] not in ['-h', '--help']):
+    elif len(sys.argv) == 2:  # shortcut for P1 config
         p1 = sys.argv[1]
         p2 = None
         single_play = True

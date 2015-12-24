@@ -4,14 +4,17 @@ KOF Keyboard Config Tool for MAME OS X
 Tested on [MAME OS X Version 0.135](http://mameosx.sourceforge.net/).
 Mac OS X 10.11.2
 
+This tool is here for you to config KOF settings for multiple keyboards
+(Yes, MAME support this!!!). But it support simple config for single keyboard.
+
+All the directions KEYs are set to `WSAD` hard coded.
+
 Install
 -------
 
 ```
-pip install kofconfig
+sudo pip install kofconfig
 ```
-
-use `sudo` if needed.
 
 Usage
 -----
@@ -22,26 +25,39 @@ kofconfig ABCD[XYZV] ABCD[XYZV]
 A: 轻拳  B: 轻脚  C: 重拳  D: 重脚
 X: A+B  Y: C+D  Z: A+B+C V: A+B+C+D
 
-XYZV 为可选
+XYZV are optional.
 
-也可以:
-kofconfig -p1 ABCD[XYZV]
+Other Usage:
+kofconfig [-p1] ABCD[XYZV]
 kofconfig -p2 ABCD[XYZV]
 kofconfig -p1 ABCD[XYZV] -p2 ABCD[XYZV]
 ```
 
-Valid Examples
---------------
+Valid Real World Examples
+-------------------------
 
 ```
 $ kofconfig [-p1] JKUI
 $ kofconfig [-p1] JKUIHN
-$ kofconfig [-p1] JKUI--HN # '-' can skip current keyboard setting.
+
 $ kofconfig -p2 JKLO
 $ kofconfig -p2 JKLOIU
 $ kofconfig -p2 JKLOIUNH
-$ kofconfig JKLOIU JKUI # assume connected two keyboards
-$ kofconfig -p2 JKUI -p1 JKLOIU  # assume connected two keyboards
+$ kofconfig JKLOIU JKUI
+$ kofconfig -p2 JKUI -p1 JKLOIU
+```
+
+You can use `-` to skip key configs:
+
+```
+$ kofconfig [-p1] JKLO-U  # Skip X, Set Y to U.
+$ kofconfig -p2 JKUI--HU  # Skip X and Y, Set Z and V.
+```
+
+When you only have one keyboard, and want set P2 for **Single Play**:
+
+```
+$ kofconfig -S -p2 JKUI
 ```
 
 
