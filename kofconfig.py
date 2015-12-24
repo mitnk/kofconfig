@@ -75,8 +75,7 @@ def config_player(tag, player_id, keys, single_play=False):
         return
     key_list = []
     for c in keys:
-        if c.upper() not in key_list:
-            key_list.append(c.upper())
+        key_list.append(c.upper())
     if len(key_list) < 4 or len(key_list) > 8:
         print("Too few keys. See -h for details.")
         exit(1)
@@ -109,22 +108,22 @@ def config_player(tag, player_id, keys, single_play=False):
         element = ET.Element('port', attrib={'type': key_code})
         newseq = ET.Element('newseq', attrib={'type': 'standard'})
         text = 'KEYCODE_{}_{}'.format(kbd_id, KEY)
-        if NUM in (1, 2) and len(key_list) >= 5:
+        if NUM in (1, 2) and len(key_list) >= 5 and key_list[4] != '-':
             X = key_list[4]
             text += ' OR KEYCODE_{}_{}'.format(kbd_id, X)
-        if NUM in (3, 4) and len(key_list) >= 6:
+        if NUM in (3, 4) and len(key_list) >= 6 and key_list[5] != '-':
             Y = key_list[5]
             text += ' OR KEYCODE_{}_{}'.format(kbd_id, Y)
-        if NUM in (1, 2, 3) and len(key_list) >= 7:
+        if NUM in (1, 2, 3) and len(key_list) >= 7 and key_list[6] != '-':
             Z = key_list[6]
             text += ' OR KEYCODE_{}_{}'.format(kbd_id, Z)
-        if NUM in (1, 2, 3, 4) and len(key_list) >= 8:
+        if NUM in (1, 2, 3, 4) and len(key_list) >= 8 and key_list[7] != '-':
             V = key_list[7]
             text += ' OR KEYCODE_{}_{}'.format(kbd_id, V)
         newseq.text = text
+
         element.append(newseq)
         tag.append(element)
-
 
 def set_none_keys(root):
     for key in KEYS_TO_NONE:
@@ -166,9 +165,13 @@ def main():
         "kofconfig -p1 ABCD[XYZV] -p2 ABCD[XYZV]\n"
 
     single_play = False
-    if len(sys.argv) <= 2:
+    if len(sys.argv) < 2:
         print(desc)
         exit(0)
+    elif len(sys.argv) == 2:
+        p1 = sys.argv[1]
+        p2 = None
+        single_play = True
     elif len(sys.argv) == 3 and '-p' not in ''.join(sys.argv).lower():
         p1 = sys.argv[1]
         p2 = sys.argv[2]
