@@ -165,10 +165,11 @@ def main():
         "kofconfig -p1 ABCD[XYZV] -p2 ABCD[XYZV]\n"
 
     single_play = False
+
     if len(sys.argv) < 2:
         print(desc)
         exit(0)
-    elif len(sys.argv) == 2:
+    elif len(sys.argv) == 2 and (sys.argv[1] not in ['-h', '--help']):
         p1 = sys.argv[1]
         p2 = None
         single_play = True
