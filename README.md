@@ -34,12 +34,13 @@ Valid Examples
 --------------
 
 ```
-$ kofconfig -p1 JKUI
-$ kofconfig -p1 JKUIHN
+$ kofconfig [-p1] JKUI
+$ kofconfig [-p1] JKUIHN
+$ kofconfig [-p1] JKUI--HN # '-' can skip current keyboard setting.
 $ kofconfig -p2 JKLO
 $ kofconfig -p2 JKLOIU
 $ kofconfig -p2 JKLOIUNH
-$ kofconfig JKLOIU JKUI  # assume connected two keyboards
+$ kofconfig JKLOIU JKUI # assume connected two keyboards
 $ kofconfig -p2 JKUI -p1 JKLOIU  # assume connected two keyboards
 ```
 
